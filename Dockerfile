@@ -3,10 +3,10 @@ FROM debian:stable-slim
 ARG steamcmd_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/steamcmd_linux.tar.gz"
 ARG rehlds_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/rehlds-bin-3.12.0.780.zip"
 ARG metamod_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/metamod-bin-1.3.0.131.zip"
-ARG amxmod_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/amxmodx-latest-base-linux.tar.gz"
-ARG amxmod_cstrike_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/amxmodx-latest-cstrike-linux.tar.gz"
+ARG amxmod_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/amxmodx-1.9.0-git5294-base-linux.tar.gz"
+ARG amxmod_cstrike_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/amxmodx-1.9.0-git5294-cstrike-linux.tar.gz"
 ARG revoice_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/revoice_0.1.0.34.zip"
-ARG cmps_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/cmps-2.3.5.zip"
+ARG cmps_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/cmps3.7.zip"
 
 # Fix warning:
 # WARNING: setlocale('en_US.UTF-8') failed, using locale: 'C'.
@@ -94,22 +94,21 @@ RUN curl -sL "$revoice_url" -o "revoice.zip" \
 # Install cmps 比赛插件
 RUN curl -sL "$cmps_url" -o "cmps.zip" \
     && unzip "cmps.zip" -d "/opt/steam/cmps" \
-    && cp -R /opt/steam/cmps/configs/cmps /opt/steam/hlds/cstrike/addons/amxmodx/configs/cmps \
+    && cp -R /opt/steam/cmps/configs/CmpsCFG /opt/steam/hlds/cstrike/addons/amxmodx/configs/CmpsCFG \
     && cp /opt/steam/cmps/configs/key_bind.ini /opt/steam/hlds/cstrike/addons/amxmodx/configs/key_bind.ini \
-    && cp /opt/steam/cmps/plugins/Cmps.amxx /opt/steam/hlds/cstrike/addons/amxmodx/plugins/cmps.amxx \
-    && cat /opt/steam/cmps/configs/modules.ini >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/modules.ini \
-    && cat /opt/steam/cmps/configs/plugins.ini >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini \
+    && cp /opt/steam/cmps/plugins/cmps_fix.amxx /opt/steam/hlds/cstrike/addons/amxmodx/plugins/cmps_fix.amxx \
+    && cp /opt/steam/cmps/plugins/match_stats.amxx /opt/steam/hlds/cstrike/addons/amxmodx/plugins/match_stats.amxx \
+    && echo 'cmps_fix.amxx            ; binds keys for voting' >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini
+    && echo 'match_stats.amxx            ; binds keys for voting' >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini
     && rm -rf "cmps.zip" "/opt/steam/cmps"
 
 # Install bind_key
 COPY lib/bind_key/amxx/bind_key.amxx /opt/steam/hlds/cstrike/addons/amxmodx/plugins/bind_key.amxx
-RUN echo >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini \
-    && echo 'bind_key.amxx            ; binds keys for voting' >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini
+RUN echo 'bind_key.amxx            ; binds keys for voting' >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini
 
 WORKDIR /opt/steam/hlds
 
 # Copy default config
-RUN rm -rf cstrike/maps cstrike/overviews
 COPY cstrike cstrike
 
 RUN chmod +x hlds_run hlds_linux
