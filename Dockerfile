@@ -72,6 +72,7 @@ RUN curl -sqL "$amxmod_url" | tar -C /opt/steam/hlds/cstrike/ -zxvf -
 # Install AMX mod X CStrike
 RUN curl -sqL "$amxmod_cstrike_url" | tar -C /opt/steam/hlds/cstrike/ -zxvf - \
     && cat /opt/steam/hlds/cstrike/mapcycle.txt >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/maps.ini \
+    && chown steam:steam maps.ini \
     && echo 'linux addons/amxmodx/dlls/amxmodx_mm_i386.so' >> /opt/steam/hlds/cstrike/addons/metamod/plugins.ini
 
 # Install reunion
@@ -98,8 +99,8 @@ RUN curl -sL "$cmps_url" -o "cmps.zip" \
     && cp /opt/steam/cmps/configs/key_bind.ini /opt/steam/hlds/cstrike/addons/amxmodx/configs/key_bind.ini \
     && cp /opt/steam/cmps/plugins/cmps_fix.amxx /opt/steam/hlds/cstrike/addons/amxmodx/plugins/cmps_fix.amxx \
     && cp /opt/steam/cmps/plugins/match_stats.amxx /opt/steam/hlds/cstrike/addons/amxmodx/plugins/match_stats.amxx \
-    && echo 'cmps_fix.amxx            ; binds keys for voting' >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini
-    && echo 'match_stats.amxx            ; binds keys for voting' >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini
+    && echo 'cmps_fix.amxx            ; CMPS 比赛插件' >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini \
+    && echo 'match_stats.amxx         ; binds keys for voting' >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini \
     && rm -rf "cmps.zip" "/opt/steam/cmps"
 
 # Install bind_key
