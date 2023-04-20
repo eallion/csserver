@@ -1,13 +1,12 @@
-FROM debian:buster-slim
+FROM debian:stable-slim
 
 ARG steamcmd_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/steamcmd_linux.tar.gz"
 ARG rehlds_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/rehlds-bin-3.12.0.780.zip"
 ARG metamod_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/metamod-bin-1.3.0.131.zip"
-ARG amxmod_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/amxmodx-1.10.0-git5467-base-linux.tar.gz"
+ARG amxmod_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/amxmodx-latest-base-linux.tar.gz"
+ARG amxmod_cstrike_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/amxmodx-latest-cstrike-linux.tar.gz"
 ARG revoice_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/revoice_0.1.0.34.zip"
-ARG jk_botti_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/jk_botti-1.43-release.tar.xz"
 ARG cmps_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/cmps-2.3.5.zip"
-ARG recsdm_url="https://raw.githubusercontent.com/eallion/csserver/main/mod/recsdm_cn.zip"
 
 # Fix warning:
 # WARNING: setlocale('en_US.UTF-8') failed, using locale: 'C'.
@@ -25,10 +24,10 @@ ENV CPU_MHZ=2300
 
 RUN groupadd -r steam && useradd -r -g steam -m -d /opt/steam steam
 
-RUN apt-get -y update && apt-get install -y --no-install-recommends \
+RUN apt-get -y update && apt-get install -y \
     ca-certificates \
     curl \
-    lib32gcc1 \
+    lib32gcc-s1 \
     unzip \
     xz-utils \
     zip \
@@ -68,7 +67,10 @@ RUN curl -sLJO "$metamod_url" \
     && sed -i 's/dlls\/cs\.so/addons\/metamod\/metamod_i386\.so/g' /opt/steam/hlds/cstrike/liblist.gam
 
 # Install AMX mod X
-RUN curl -sqL "$amxmod_url" | tar -C /opt/steam/hlds/cstrike/ -zxvf - \
+RUN curl -sqL "$amxmod_url" | tar -C /opt/steam/hlds/cstrike/ -zxvf -
+
+# Install AMX mod X CStrike
+RUN curl -sqL "$amxmod_cstrike_url" | tar -C /opt/steam/hlds/cstrike/ -zxvf - \
     && cat /opt/steam/hlds/cstrike/mapcycle.txt >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/maps.ini \
     && echo 'linux addons/amxmodx/dlls/amxmodx_mm_i386.so' >> /opt/steam/hlds/cstrike/addons/metamod/plugins.ini
 
@@ -92,27 +94,23 @@ RUN curl -sL "$revoice_url" -o "revoice.zip" \
 # Install cmps 比赛插件
 RUN curl -sL "$cmps_url" -o "cmps.zip" \
     && unzip "cmps.zip" -d "/opt/steam/cmps" \
-    && cp -R /opt/steam/cmps/* /opt/steam/hlds/cstrike/addons/amxmodx/ \
+    && cp -R /opt/steam/cmps/configs/cmps /opt/steam/hlds/cstrike/addons/amxmodx/configs/cmps \
+    && cp /opt/steam/cmps/configs/key_bind.ini /opt/steam/hlds/cstrike/addons/amxmodx/configs/key_bind.ini \
+    && cp /opt/steam/cmps/plugins/Cmps.amxx /opt/steam/hlds/cstrike/addons/amxmodx/plugins/cmps.amxx \
+    && cat /opt/steam/cmps/configs/modules.ini >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/modules.ini \
+    && cat /opt/steam/cmps/configs/plugins.ini >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini \
     && rm -rf "cmps.zip" "/opt/steam/cmps"
-
-# Install ReCSDM 汉化版
-RUN curl -sL "$recsdm_url" -o "recsdm_cn.zip" \
-    && unzip "recsdm_cn.zip" -d "/opt/steam/recsdm" \
-    && cp -R /opt/steam/recsdm/* /opt/steam/hlds/cstrike/addons/amxmodx/ \
-    && rm -rf "recsdm_cn.zip" "/opt/steam/recsdm"
 
 # Install bind_key
 COPY lib/bind_key/amxx/bind_key.amxx /opt/steam/hlds/cstrike/addons/amxmodx/plugins/bind_key.amxx
-RUN echo 'bind_key.amxx            ; binds keys for voting' >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini
-
-# Install jk_botti
-# RUN curl -sqL "$jk_botti_url" | tar -C /opt/steam/hlds/cstrike/ -xJ \
-#    && echo 'linux addons/jk_botti/dlls/jk_botti_mm_i386.so' >> /opt/steam/hlds/cstrike/addons/metamod/plugins.ini
+RUN echo >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini \
+    && echo 'bind_key.amxx            ; binds keys for voting' >> /opt/steam/hlds/cstrike/addons/amxmodx/configs/plugins.ini
 
 WORKDIR /opt/steam/hlds
 
 # Copy default config
-COPY valve cstrike
+RUN rm -rf cstrike/maps cstrike/overviews
+COPY cstrike cstrike
 
 RUN chmod +x hlds_run hlds_linux
 
