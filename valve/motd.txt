@@ -1,12 +1,12 @@
-Welcome to reHLDS Docker reunion(47/48)
-
-
-This server uses Docker.
-For more information visit
-https://github.com/artkirienko/rehlds-docker-reunion
-
-
-
-
-Love old-school gaming and Half-Life?
+Welcome to reHLDS Docker reunion(47/48)<br/>
+<br/>
+<br/>
+This server uses Docker.<br/>
+For more information visit<br/>
+https://github.com/eallion/csserver<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+Love old-school gaming and Half-Life?<br/>
 Join us on Discord: https://discord.com/invite/halflife
